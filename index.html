@@ -3,41 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PB-SNAP Studio Pro Max</title>
+    <title>PB-SNAP Studio - Custom Watermark</title>
     <style>
         :root { --primary: #ff4757; --secondary: #2ed573; --dark: #2f3542; --light: #ffffff; }
-        body { font-family: 'Inter', sans-serif; background: #f1f2f6; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 10px; overflow-x: hidden; }
+        body { font-family: 'Inter', sans-serif; background: #f1f2f6; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 10px; }
         
         .app-container { background: var(--light); padding: 1.2rem; border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.1); text-align: center; width: 100%; max-width: 480px; box-sizing: border-box; }
         
-        /* Viewport Adaptif */
+        /* Viewport */
         .viewport-container { position: relative; width: 100%; background: #000; border-radius: 16px; overflow: hidden; margin-bottom: 10px; border: 4px solid #eee; display: flex; align-items: center; justify-content: center; }
         .portrait { aspect-ratio: 3/4; }
         .landscape { aspect-ratio: 4/3; }
-        
-        #video { width: 100%; height: 100%; object-fit: cover; background: #000; }
+        #video { width: 100%; height: 100%; object-fit: cover; }
         .mirror { transform: scaleX(-1); } 
-        
-        #countdown { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 80px; color: white; font-weight: 900; z-index: 10; text-shadow: 0 0 20px rgba(0,0,0,0.5); pointer-events: none; }
+        #countdown { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 80px; color: white; font-weight: 900; z-index: 10; text-shadow: 0 0 20px rgba(0,0,0,0.5); }
         .flash { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: white; opacity: 0; z-index: 20; pointer-events: none; }
 
-        /* Tools */
-        .tools-row { display: flex; gap: 8px; margin-bottom: 15px; }
-        .btn-tool { flex: 1; padding: 12px; border-radius: 12px; border: 1px solid #ddd; background: #fff; cursor: pointer; font-size: 11px; font-weight: bold; }
-
-        .settings-section { text-align: left; margin-bottom: 15px; }
+        /* Inputs & Settings */
+        .settings-section { text-align: left; margin-bottom: 12px; }
         .option-label { font-size: 10px; font-weight: bold; color: #aaa; text-transform: uppercase; margin-bottom: 5px; display: block; }
-        .scroll-menu { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 5px; scrollbar-width: none; -ms-overflow-style: none; }
-        .scroll-menu::-webkit-scrollbar { display: none; }
+        .scroll-menu { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 5px; scrollbar-width: none; }
         .btn-opt { padding: 8px 12px; border: 1px solid #ddd; border-radius: 10px; background: white; cursor: pointer; font-size: 11px; white-space: nowrap; flex-shrink: 0; }
         .btn-opt.active { background: var(--primary); color: white; border-color: var(--primary); }
 
-        #start-btn { background: var(--primary); color: white; border: none; padding: 16px; border-radius: 15px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; }
-        #start-btn:disabled { background: #ccc; }
+        .watermark-input { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; box-sizing: border-box; font-size: 14px; margin-top: 5px; outline: none; transition: border 0.3s; }
+        .watermark-input:focus { border-color: var(--primary); }
+
+        #start-btn { background: var(--primary); color: white; border: none; padding: 16px; border-radius: 15px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px; }
 
         /* Preview Modal */
-        #preview-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 100; flex-direction: column; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; }
-        #preview-img { max-height: 70vh; max-width: 100%; border-radius: 8px; margin-bottom: 15px; object-fit: contain; }
+        #preview-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 100; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+        #preview-img { max-height: 70vh; max-width: 100%; border-radius: 8px; margin-bottom: 15px; }
         .modal-btns { display: flex; gap: 10px; width: 100%; max-width: 400px; }
         .btn-modal { flex: 1; padding: 14px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; text-decoration: none; text-align: center; color: white; font-size: 14px; }
     </style>
@@ -45,9 +41,9 @@
 <body>
 
 <div class="app-container">
-    <div class="tools-row">
-        <button class="btn-tool" onclick="switchCamera()">🔄 Ganti Kamera</button>
-        <button class="btn-tool" onclick="toggleOrientation()">📱 Putar Layar</button>
+    <div style="display:flex; gap:8px; margin-bottom:15px;">
+        <button class="btn-opt" style="flex:1" onclick="switchCamera()">🔄 Ganti Kamera</button>
+        <button class="btn-opt" style="flex:1" onclick="toggleOrientation()">📱 Putar Layar</button>
     </div>
     
     <div id="viewport" class="viewport-container portrait">
@@ -57,23 +53,26 @@
     </div>
 
     <div class="settings-section">
-        <span class="option-label">Timer (2-5 Detik)</span>
-        <div class="scroll-menu">
-            <button class="btn-opt" onclick="setTimer(2, this)">2s</button>
-            <button class="btn-opt active" onclick="setTimer(3, this)">3s</button>
-            <button class="btn-opt" onclick="setTimer(4, this)">4s</button>
-            <button class="btn-opt" onclick="setTimer(5, this)">5s</button>
-        </div>
+        <span class="option-label">Watermark Kustom (Nama/Pesan)</span>
+        <input type="text" id="watermark-text" class="watermark-input" placeholder="Contoh: @nama_kamu ✨" maxlength="25">
     </div>
 
-    <div class="settings-section">
-        <span class="option-label">Frame (2-6 Foto)</span>
-        <div class="scroll-menu">
-            <button class="btn-opt" onclick="setCount(2, this)">2</button>
-            <button class="btn-opt" onclick="setCount(3, this)">3</button>
-            <button class="btn-opt active" onclick="setCount(4, this)">4</button>
-            <button class="btn-opt" onclick="setCount(5, this)">5</button>
-            <button class="btn-opt" onclick="setCount(6, this)">6</button>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <div class="settings-section">
+            <span class="option-label">Timer (2-5s)</span>
+            <div class="scroll-menu">
+                <button class="btn-opt" onclick="setTimer(2, this)">2s</button>
+                <button class="btn-opt active" onclick="setTimer(3, this)">3s</button>
+                <button class="btn-opt" onclick="setTimer(5, this)">5s</button>
+            </div>
+        </div>
+        <div class="settings-section">
+            <span class="option-label">Frame (2-6)</span>
+            <div class="scroll-menu">
+                <button class="btn-opt" onclick="setCount(2, this)">2</button>
+                <button class="btn-opt active" onclick="setCount(4, this)">4</button>
+                <button class="btn-opt" onclick="setCount(6, this)">6</button>
+            </div>
         </div>
     </div>
 
@@ -83,7 +82,6 @@
             <button class="btn-opt active" onclick="setDecor('none', this)">Polos</button>
             <button class="btn-opt" onclick="setDecor('🦋', this)">🦋</button>
             <button class="btn-opt" onclick="setDecor('✨', this)">✨</button>
-            <button class="btn-opt" onclick="setDecor('🌈', this)">🌈</button>
             <button class="btn-opt" onclick="setColor('#ffffff', this)">⚪ Putih</button>
             <button class="btn-opt" onclick="setColor('#2f3542', this)">⚫ Hitam</button>
         </div>
@@ -112,59 +110,25 @@
     const startBtn = document.getElementById('start-btn');
     const countdownEl = document.getElementById('countdown');
     const flashEl = document.getElementById('flash');
+    const watermarkInput = document.getElementById('watermark-text');
 
     let stream = null, currentFacingMode = "user", currentOrientation = "portrait";
     let photos = [], currentTimer = 3, currentCount = 4, currentColor = '#ffffff', currentDecor = 'none';
     let finalBlob = null;
 
-    // FIX KAMERA UNTUK MOBILE
     async function startCamera() {
-        if (stream) {
-            stream.getTracks().forEach(track => track.stop());
-        }
-
-        const constraints = {
-            video: {
-                facingMode: { ideal: currentFacingMode },
-                // Menggunakan ideal daripada exact agar lebih fleksibel di berbagai HP
-                width: { ideal: 1280 },
-                height: { ideal: 720 }
-            },
-            audio: false
-        };
-
+        if (stream) stream.getTracks().forEach(track => track.stop());
+        const constraints = { video: { facingMode: { ideal: currentFacingMode }, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false };
         try {
             stream = await navigator.mediaDevices.getUserMedia(constraints);
             video.srcObject = stream;
-            
-            // Mirror hanya aktif untuk kamera depan
-            if (currentFacingMode === "user") {
-                video.classList.add('mirror');
-            } else {
-                video.classList.remove('mirror');
-            }
-
-            // Memastikan video diputar setelah stream didapat
-            video.onloadedmetadata = () => {
-                video.play().catch(e => console.error("Video play failed:", e));
-            };
-
-        } catch (e) {
-            console.error("Camera error:", e);
-            alert("Gagal mengakses kamera. Pastikan izin kamera diberikan dan gunakan HTTPS.");
-        }
+            video.className = currentFacingMode === "user" ? "mirror" : "";
+            video.onloadedmetadata = () => video.play();
+        } catch (e) { alert("Gagal akses kamera."); }
     }
 
-    function switchCamera() {
-        currentFacingMode = currentFacingMode === "user" ? "environment" : "user";
-        startCamera();
-    }
-
-    function toggleOrientation() {
-        currentOrientation = currentOrientation === "portrait" ? "landscape" : "portrait";
-        viewport.className = `viewport-container ${currentOrientation}`;
-    }
-
+    function switchCamera() { currentFacingMode = currentFacingMode === "user" ? "environment" : "user"; startCamera(); }
+    function toggleOrientation() { currentOrientation = currentOrientation === "portrait" ? "landscape" : "portrait"; viewport.className = `viewport-container ${currentOrientation}`; }
     function setTimer(t, btn) { currentTimer = t; updateActive(btn); }
     function setCount(c, btn) { currentCount = c; updateActive(btn); }
     function setDecor(d, btn) { currentDecor = d; updateActive(btn); }
@@ -177,7 +141,6 @@
 
     startBtn.onclick = async () => {
         photos = []; startBtn.disabled = true;
-        
         for (let i = 1; i <= currentCount; i++) {
             for (let c = currentTimer; c > 0; c--) {
                 countdownEl.innerText = c;
@@ -185,18 +148,13 @@
             }
             countdownEl.innerText = "";
             flashEl.style.opacity = 1; setTimeout(() => flashEl.style.opacity = 0, 100);
-
+            
             const snap = document.createElement('canvas');
             const ctx = snap.getContext('2d');
-            
             if (currentOrientation === "portrait") { snap.width = 600; snap.height = 800; }
             else { snap.width = 800; snap.height = 600; }
 
-            if (currentFacingMode === "user") { 
-                ctx.translate(snap.width, 0); 
-                ctx.scale(-1, 1); 
-            }
-            
+            if (currentFacingMode === "user") { ctx.translate(snap.width, 0); ctx.scale(-1, 1); }
             ctx.drawImage(video, 0, 0, snap.width, snap.height);
             photos.push(snap.toDataURL('image/jpeg', 0.8));
             await new Promise(r => setTimeout(r, 800));
@@ -209,15 +167,10 @@
         const imgW = (currentOrientation === "portrait") ? 600 : 800;
         const imgH = (currentOrientation === "portrait") ? 800 : 600;
         const gap = 40, margin = 70;
-
         const isDouble = currentCount >= 4;
-        if (isDouble) {
-            canvas.width = (margin * 2) + (imgW * 2) + gap;
-            canvas.height = (margin * 2) + (Math.ceil(currentCount/2) * (imgH + gap)) + 120;
-        } else {
-            canvas.width = (margin * 2) + imgW;
-            canvas.height = (margin * 2) + (currentCount * (imgH + gap)) + 120;
-        }
+        
+        canvas.width = isDouble ? (margin * 2) + (imgW * 2) + gap : (margin * 2) + imgW;
+        canvas.height = (margin * 2) + (Math.ceil(currentCount/(isDouble?2:1)) * (imgH + gap)) + 150;
 
         ctx.fillStyle = currentColor;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -227,12 +180,9 @@
             img.src = src;
             img.onload = () => {
                 let x = isDouble ? margin + (i % 2 * (imgW + gap)) : margin;
-                let y = isDouble ? margin + (Math.floor(i / 2) * (imgH + gap)) : margin + (i * (imgH + gap));
+                let y = margin + (Math.floor(i / (isDouble?2:1)) * (imgH + gap));
                 ctx.drawImage(img, x, y, imgW, imgH);
-                if (currentDecor !== 'none') {
-                    ctx.font = "50px Arial";
-                    ctx.fillText(currentDecor, x + 20, y + 70);
-                }
+                if (currentDecor !== 'none') { ctx.font = "50px Arial"; ctx.fillText(currentDecor, x + 20, y + 70); }
                 if (i === currentCount - 1) finish();
             };
         });
@@ -240,26 +190,28 @@
 
     function finish() {
         const ctx = canvas.getContext('2d');
-        ctx.fillStyle = currentColor === '#2f3542' ? '#fff' : '#333';
+        const isDark = currentColor === '#2f3542';
+        const userText = watermarkInput.value || "PB-SNAP STUDIO";
+        
+        ctx.fillStyle = isDark ? '#fff' : '#333';
         ctx.textAlign = "center";
-        ctx.font = "bold 40px Inter";
-        ctx.fillText("✨ PB-SNAP MEMORIES ✨", canvas.width/2, canvas.height - 65);
+        ctx.font = "bold 45px Inter";
+        ctx.fillText(userText.toUpperCase(), canvas.width/2, canvas.height - 90);
+        ctx.font = "24px Inter";
+        ctx.fillText(new Date().toLocaleDateString('id-ID'), canvas.width/2, canvas.height - 50);
 
         canvas.toBlob(blob => {
             finalBlob = blob;
             previewImg.src = URL.createObjectURL(blob);
             document.getElementById('save-btn').href = previewImg.src;
-            document.getElementById('save-btn').download = `pb-snap-${Date.now()}.png`;
+            document.getElementById('save-btn').download = `pb-snap.png`;
             previewModal.style.display = 'flex';
             startBtn.disabled = false;
         }, 'image/png');
     }
 
     function closePreview() { previewModal.style.display = 'none'; }
-
-    // Jalankan kamera saat halaman dimuat
     window.addEventListener('load', startCamera);
-
 </script>
 </body>
 </html>
