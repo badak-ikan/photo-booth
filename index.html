@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> Wahyu Photobooth Studio </title>
+    <style>
+        :root { --primary: #ff4757; --secondary: #2ed573; --dark: #2f3542; --light: #ffffff; }
+        body { font-family: 'Inter', sans-serif; background: #f1f2f6; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 10px; }
+        
+        .app-container { background: var(--light); padding: 1.2rem; border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.1); text-align: center; width: 100%; max-width: 480px; }
+        
+        /* Viewport Adaptif */
+        .viewport-container { position: relative; width: 100%; background: #000; border-radius: 16px; overflow: hidden; margin-bottom: 10px; border: 4px solid #eee; }
+        .portrait { aspect-ratio: 3/4; }
+        .landscape { aspect-ratio: 4/3; }
+        
+        #video { width: 100%; height: 100%; object-fit: cover; }
+        .mirror { transform: scaleX(-1); } 
+        
+        #countdown { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 80px; color: white; font-weight: 900; z-index: 10; text-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        .flash { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: white; opacity: 0; z-index: 20; pointer-events: none; }
+
+        /* Tools */
+        .tools-row { display: flex; gap: 8px; margin-bottom: 15px; }
+        .btn-tool { flex: 1; padding: 10px; border-radius: 10px; border: 1px solid #ddd; background: #fff; cursor: pointer; font-size: 11px; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 4px; }
+
+        /* Settings Grid */
+        .settings-section { text-align: left; margin-bottom: 15px; }
+        .option-label { font-size: 10px; font-weight: bold; color: #aaa; text-transform: uppercase; margin-bottom: 5px; display: block; }
+        .scroll-menu { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 5px; scrollbar-width: none; }
+        .btn-opt { padding: 8px 12px; border: 1px solid #ddd; border-radius: 10px; background: white; cursor: pointer; font-size: 11px; white-space: nowrap; }
+        .btn-opt.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+        #start-btn { background: var(--primary); color: white; border: none; padding: 16px; border-radius: 15px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; box-shadow: 0 4px 15px rgba(255, 71, 87, 0.3); }
+        #start-btn:disabled { background: #ccc; box-shadow: none; }
+
+        /* Preview Modal */
+        #preview-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 100; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+        #preview-img { max-height: 75vh; max-width: 100%; border-radius: 8px; margin-bottom: 15px; }
+        .modal-btns { display: flex; gap: 10px; width: 100%; max-width: 400px; }
+        .btn-modal { flex: 1; padding: 14px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; text-decoration: none; text-align: center; color: white; }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <div class="tools-row">
+        <button class="btn-tool" onclick="switchCamera()">🔄 Ganti Kamera</button>
+        <button class="btn-tool" onclick="toggleOrientation()">📱 Portrait/Landscape</button>
+    </div>
+    
+    <div id="viewport" class="viewport-container portrait">
+        <video id="video" autoplay playsinline class="mirror"></video>
+        <div id="countdown"></div>
+        <div id="flash" class="flash"></div>
+    </div>
+
+    <div class="settings-section">
+        <span class="option-label">Pilih Jeda (Timer)</span>
+        <div class="scroll-menu">
+            <button class="btn-opt" onclick="setTimer(2, this)">2 Detik</button>
+            <button class="btn-opt active" onclick="setTimer(3, this)">3 Detik</button>
+            <button class="btn-opt" onclick="setTimer(4, this)">4 Detik</button>
+            <button class="btn-opt" onclick="setTimer(5, this)">5 Detik</button>
+        </div>
+    </div>
+
+    <div class="settings-section">
+        <span class="option-label">Pilih Jumlah Frame</span>
+        <div class="scroll-menu">
+            <button class="btn-opt" onclick="setCount(2, this)">2 Frame</button>
+            <button class="btn-opt" onclick="setCount(3, this)">3 Frame</button>
+            <button class="btn-opt active" onclick="setCount(4, this)">4 Frame</button>
+            <button class="btn-opt" onclick="setCount(5, this)">5 Frame</button>
+            <button class="btn-opt" onclick="setCount(6, this)">6 Frame</button>
+        </div>
+    </div>
+
+    <div class="settings-section">
+        <span class="option-label">Hiasan & Warna</span>
+        <div class="scroll-menu">
+            <button class="btn-opt active" onclick="setDecor('none', this)">Polos</button>
+            <button class="btn-opt" onclick="setDecor('🦋', this)">🦋 Kupu</button>
+            <button class="btn-opt" onclick="setDecor('✨', this)">✨ Sparkles</button>
+            <button class="btn-opt" onclick="setDecor('🌈', this)">🌈 Pelangi</button>
+            <button class="btn-opt" onclick="setColor('#ffffff', this)">⚪ Putih</button>
+            <button class="btn-opt" onclick="setColor('#2f3542', this)">⚫ Hitam</button>
+        </div>
+    </div>
+
+    <button id="start-btn">MULAI FOTO</button>
+</div>
+
+<div id="preview-modal">
+    <img id="preview-img" src="">
+    <div class="modal-btns">
+        <button class="btn-modal" style="background:#555;" onclick="closePreview()">ULANG</button>
+        <a id="save-btn" class="btn-modal" style="background:var(--secondary);">SIMPAN</a>
+        <button id="share-btn" class="btn-modal" style="background:#3498db;">SHARE</button>
+    </div>
+</div>
+
+<canvas id="canvas" style="display:none"></canvas>
+
+<script>
+    const video = document.getElementById('video');
+    const viewport = document.getElementById('viewport');
+    const canvas = document.getElementById('canvas');
+    const previewModal = document.getElementById('preview-modal');
+    const previewImg = document.getElementById('preview-img');
+    const startBtn = document.getElementById('start-btn');
+    const countdownEl = document.getElementById('countdown');
+    const flashEl = document.getElementById('flash');
+
+    let stream = null, currentFacingMode = "user", currentOrientation = "portrait";
+    let photos = [], currentTimer = 3, currentCount = 4, currentColor = '#ffffff', currentDecor = 'none';
+    let finalBlob = null;
+
+    async function startCamera() {
+        if (stream) stream.getTracks().forEach(track => track.stop());
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({ 
+                video: { facingMode: currentFacingMode, width: 1280, height: 720 } 
+            });
+            video.srcObject = stream;
+            video.className = currentFacingMode === "user" ? "mirror" : "";
+        } catch (e) { alert("Kamera tidak ditemukan."); }
+    }
+
+    function switchCamera() {
+        currentFacingMode = currentFacingMode === "user" ? "environment" : "user";
+        startCamera();
+    }
+
+    function toggleOrientation() {
+        currentOrientation = currentOrientation === "portrait" ? "landscape" : "portrait";
+        viewport.className = `viewport-container ${currentOrientation}`;
+    }
+
+    function setTimer(t, btn) { currentTimer = t; updateActive(btn); }
+    function setCount(c, btn) { currentCount = c; updateActive(btn); }
+    function setDecor(d, btn) { currentDecor = d; updateActive(btn); }
+    function setColor(c, btn) { currentColor = c; updateActive(btn); }
+
+    function updateActive(btn) {
+        btn.parentElement.querySelectorAll('.btn-opt').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    }
+
+    startBtn.onclick = async () => {
+        photos = []; startBtn.disabled = true;
+        
+        for (let i = 1; i <= currentCount; i++) {
+            for (let c = currentTimer; c > 0; c--) {
+                countdownEl.innerText = c;
+                await new Promise(r => setTimeout(r, 1000));
+            }
+            countdownEl.innerText = "";
+            flashEl.style.opacity = 1; setTimeout(() => flashEl.style.opacity = 0, 100);
+
+            const snap = document.createElement('canvas');
+            const ctx = snap.getContext('2d');
+            
+            // Ukuran per foto
+            if (currentOrientation === "portrait") { snap.width = 600; snap.height = 800; }
+            else { snap.width = 800; snap.height = 600; }
+
+            if (currentFacingMode === "user") { ctx.translate(snap.width, 0); ctx.scale(-1, 1); }
+            ctx.drawImage(video, 0, 0, snap.width, snap.height);
+            photos.push(snap.toDataURL('image/jpeg'));
+            await new Promise(r => setTimeout(r, 800));
+        }
+        renderResult();
+    };
+
+    function renderResult() {
+        const ctx = canvas.getContext('2d');
+        const imgW = (currentOrientation === "portrait") ? 600 : 800;
+        const imgH = (currentOrientation === "portrait") ? 800 : 600;
+        const gap = 40, margin = 70;
+
+        const isDouble = currentCount >= 4;
+        if (isDouble) {
+            canvas.width = (margin * 2) + (imgW * 2) + gap;
+            canvas.height = (margin * 2) + (Math.ceil(currentCount/2) * (imgH + gap)) + 120;
+        } else {
+            canvas.width = (margin * 2) + imgW;
+            canvas.height = (margin * 2) + (currentCount * (imgH + gap)) + 120;
+        }
+
+        ctx.fillStyle = currentColor;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        photos.forEach((src, i) => {
+            const img = new Image();
+            img.src = src;
+            img.onload = () => {
+                let x = isDouble ? margin + (i % 2 * (imgW + gap)) : margin;
+                let y = isDouble ? margin + (Math.floor(i / 2) * (imgH + gap)) : margin + (i * (imgH + gap));
+                
+                ctx.drawImage(img, x, y, imgW, imgH);
+                
+                if (currentDecor !== 'none') {
+                    ctx.font = "50px Arial";
+                    ctx.fillText(currentDecor, x + 20, y + 60);
+                }
+                
+                if (i === currentCount - 1) finish();
+            };
+        });
+    }
+
+    function finish() {
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = currentColor === '#2f3542' ? '#fff' : '#333';
+        ctx.textAlign = "center";
+        ctx.font = "bold 40px Inter";
+        ctx.fillText("_Created by WahyuPhotobooth_", canvas.width/2, canvas.height - 60);
+
+        canvas.toBlob(blob => {
+            finalBlob = blob;
+            previewImg.src = URL.createObjectURL(blob);
+            document.getElementById('save-btn').href = previewImg.src;
+            document.getElementById('save-btn').download = `snapshot_${Date.now()}.png`;
+            previewModal.style.display = 'flex';
+            startBtn.disabled = false;
+        }, 'image/png');
+    }
+
+    function closePreview() { previewModal.style.display = 'none'; }
+
+    startCamera();
+</script>
+</body>
+</html>
